@@ -1,0 +1,75 @@
+{
+    "name": "dataflow1",
+    "properties": {
+        "type": "MappingDataFlow",
+        "typeProperties": {
+            "sources": [
+                {
+                    "dataset": {
+                        "referenceName": "DelimitedText1",
+                        "type": "DatasetReference"
+                    },
+                    "name": "orders"
+                },
+                {
+                    "dataset": {
+                        "referenceName": "DelimitedText2",
+                        "type": "DatasetReference"
+                    },
+                    "name": "Customers"
+                }
+            ],
+            "sinks": [
+                {
+                    "dataset": {
+                        "referenceName": "DelimitedText3",
+                        "type": "DatasetReference"
+                    },
+                    "name": "sink1"
+                }
+            ],
+            "transformations": [
+                {
+                    "name": "assert1"
+                },
+                {
+                    "name": "derivedColumn1",
+                    "description": "Flagging correct and incorrect columns"
+                }
+            ],
+            "scriptLines": [
+                "source(output(",
+                "          OrderID as string,",
+                "          CustomerKey as string,",
+                "          OrderDate as string,",
+                "          ProductCode as string,",
+                "          Quantity as string,",
+                "          UnitPrice as string,",
+                "          ShippingRegion as string,",
+                "          IsProcessed as string",
+                "     ),",
+                "     allowSchemaDrift: true,",
+                "     validateSchema: false,",
+                "     ignoreNoFilesFound: false) ~> orders",
+                "source(output(",
+                "          CustomerKey as string,",
+                "          FullName as string",
+                "     ),",
+                "     allowSchemaDrift: true,",
+                "     validateSchema: false,",
+                "     ignoreNoFilesFound: false) ~> Customers",
+                "orders, Customers assert(expectTrue(iif(isFloat(UnitPrice), toFloat(UnitPrice), -1.5)>0, false, 'unitPrice', null, 'Validating corerctness of Unit Price values'),",
+                "     expectExists(orders@CustomerKey == Customers@CustomerKey, false, 'CustomerIDExist')) ~> assert1",
+                "assert1 derive(IsErrorRow = isError(),",
+                "          IsInvalidCustomer = hasError('CustomerIDExist')) ~> derivedColumn1",
+                "derivedColumn1 sink(allowSchemaDrift: true,",
+                "     validateSchema: false,",
+                "     umask: 0022,",
+                "     preCommands: [],",
+                "     postCommands: [],",
+                "     skipDuplicateMapInputs: true,",
+                "     skipDuplicateMapOutputs: true) ~> sink1"
+            ]
+        }
+    }
+}
