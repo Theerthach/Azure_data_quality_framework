@@ -30,6 +30,7 @@ The purpose is to **automate data validation**, **store DQ metrics**, and **enab
 
 7. **Power BI Dashboard**  
    Power BI visualizes DQ metrics, trends, and rule-level failures.
+<img width="911" height="541" alt="Flow_Diagram drawio" src="https://github.com/user-attachments/assets/93615035-ee0f-4a30-b4b7-108b05843010" />
 
 ---
 
